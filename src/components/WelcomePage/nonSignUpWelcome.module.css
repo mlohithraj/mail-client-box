@@ -1,0 +1,42 @@
+/* Container styling */
+.blog {
+  max-width: 800px; /* Adjust as needed */
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  line-height: 1.6;
+}
+
+/* Heading styling */
+.blog h2 {
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+/* Paragraph styling */
+.blog p {
+  font-size: 16px;
+  color: #666;
+}
+
+/* List styling */
+.blog ul {
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+/* List item styling */
+.blog li {
+  margin-bottom: 5px;
+}
+
+/* Link styling */
+.blog a {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.blog a:hover {
+  text-decoration: underline;
+}
