@@ -1,80 +1,125 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { Button, Form, FormGroup, Row } from 'react-bootstrap';
+import classes from './signUp.module.css';
+import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 
 const SignUp = () => {
+  const history = useHistory();
   const emailInputRef = useRef();
   const passwordInputRef = useRef();
   const confirmPasswordInputRef = useRef();
 
-  const authorizHandler = (e) => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [confirmEnteredPassword, setConfirmEnteredPassword] = useState('');
+
+  const switchAuthModeHandler = () => {
+    setIsLogin((prevState) => !prevState);
+  };
+
+  const authorizHandler = async (e) => {
     e.preventDefault();
 
-    const emailIputHandler = emailInputRef.current.value;
+    const emailInputHandler = emailInputRef.current.value;
     const passwordInputHandler = passwordInputRef.current.value;
-    const confirmPasswordInputHandler = confirmPasswordInputRef.current.value;
+
+    if (!isLogin) {
+      const confirmEnteredPasswordValue = confirmPasswordInputRef.current.value;
+      setConfirmEnteredPassword(confirmEnteredPasswordValue);
+
+      if (passwordInputHandler !== confirmEnteredPasswordValue) {
+        alert('Password does not match. Please re-enter password...');
+        return;
+      }
+    }
 
     let url;
-    url = 'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCJEJQXRKSU3Y_zArycMPAC3dU7v2rlvMk';
 
-    fetch(url, {
-      method: 'POST',
-      body: JSON.stringify({
-        email: emailIputHandler,
-        password: passwordInputHandler,
-        confirmPpassword: confirmPasswordInputHandler,
-        returnSecureToken: true,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    }).then((res) => {
-      if (res.ok) {
-        console.log('Succesfully Signed In');
-        return res.json();
-      } else {
-        return res
-          .json()
-          .then((data) => {
-            let errMessage = 'Authentication failed';
+    if (isLogin) {
+      url =
+        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCJEJQXRKSU3Y_zArycMPAC3dU7v2rlvMk';
+    } else {
+      url =
+        'https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCJEJQXRKSU3Y_zArycMPAC3dU7v2rlvMk';
+    }
 
-            throw new Error(errMessage);
-          })
+    try {
+      const response = await fetch(url, {
+        method: 'POST',
+        body: JSON.stringify({
+          email: emailInputHandler,
+          password: passwordInputHandler,
+          returnSecureToken: true,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-          .catch((err) => {
-            console.log(err.message);
-          });
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error.message || 'Authentication failed');
       }
-    });
+      history.replace('/welcome');
+      console.log('Successfully Signed Up');
+    } catch (error) {
+      console.error('Signup Error:', error.message);
+    }
   };
 
   return (
-    <Form onClick={authorizHandler}>
+    <Form onSubmit={authorizHandler} className={classes.form}>
+      <h1>{isLogin ? 'Login' : 'Sign Up'}</h1>
       <Row className="mb-1">
-        <Form.Label>Email</Form.Label>
+        <Form.Label className={classes.label} htmlFor="email">
+          Email
+        </Form.Label>
         <Form.Control
+          className={classes.input}
           type="email"
           placeholder="Email"
           required
           ref={emailInputRef}
         />
-        <br />
-        <Form.Label>New Password</Form.Label>
+      </Row>
+      <Row className="mb-1">
+        <Form.Label className={classes.label} htmlFor="password">
+          New Password
+        </Form.Label>
         <Form.Control
+          className={classes.input}
           type="password"
           placeholder="Password"
           required
           ref={passwordInputRef}
         />
-        <br />
-        <Form.Label>Confirm Password</Form.Label>
-        <Form.Control
-          type="password"
-          placeholder="Password"
-          required
-          ref={confirmPasswordInputRef}
-        />
       </Row>
-      <Button type="submit">Submit form</Button>
+      {!isLogin && (
+        <Row className="mb-1">
+          <Form.Label className={classes.label} htmlFor="password">
+            Confirm Password
+          </Form.Label>
+          <Form.Control
+            className={classes.input}
+            type="password"
+            placeholder="Password"
+            required
+            ref={confirmPasswordInputRef}
+          />
+        </Row>
+      )}
+      <Button type="submit" className={classes.submit}>
+        {isLogin ? 'Login' : 'Sign up'}
+      </Button>
+      <p>
+        {isLogin ? "Don't have an Account?" : 'Have an Account?'}{' '}
+        <button
+          type="button"
+          className={classes.toggle}
+          onClick={switchAuthModeHandler}
+        >
+          {isLogin ? 'Sign Up' : 'Login'}
+        </button>
+      </p>
     </Form>
   );
 };
